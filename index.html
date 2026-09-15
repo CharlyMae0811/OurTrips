@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Albania · 25 Sep – 4 Oct 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home"><span class="brand-heart">♡</span> Albania <span class="brand-dates">25 Sep – 4 Oct 2026</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#home" data-tab="home">The trip</a>
+      <a href="#hotels" data-tab="hotels">Where we sleep</a>
+      <a href="#food" data-tab="food">Where we eat</a>
+      <a href="#itinerary" data-tab="itinerary">Day by day</a>
+    </nav>
+    <div class="me"><span id="who"></span><span id="live" class="live off">this device only</span></div>
+  </header>
+
+  <!-- ================= HOME ================= -->
+  <main id="tab-home" class="tab" hidden>
+    <section class="hero" style="background-image:url('photos/scenery/llogara-pass.jpg')">
+      <div class="hero-inner">
+        <p class="eyebrow">A road trip for two</p>
+        <h1>Albania</h1>
+        <p class="hero-sub">25 September – 4 October 2026 · nine nights · one loop<br/>the coast while the water is warm, the mountains after</p>
+        <a class="btn btn-light" href="#hotels">Help me pick the hotels ↓</a>
+      </div>
+    </section>
+
+    <section class="wrap glance">
+      <div class="stat"><b>9</b><span>nights</span></div>
+      <div class="stat"><b>~700</b><span>km loop</span></div>
+      <div class="stat"><b>23–24°</b><span>sea temperature</span></div>
+      <div class="stat"><b>1</b><span>early alarm (the last morning)</span></div>
+    </section>
+
+    <section class="wrap">
+      <h2 class="section-title">The route</h2>
+      <p class="lede">Tirana airport → Kruja → Radhimë → Llogara → Dhërmi → Himarë → Porto Palermo & Qeparo → Blue Eye → Gjirokastër → Përmet & Bënjë → Berat → (Holta or Bovilla) → Tirana. Click a pin to see what we'd do there.</p>
+      <div class="map-wrap">
+        <div id="map-home" class="map map-tall" role="region" aria-label="Road trip map"></div>
+        <aside id="stop-panel" class="stop-panel" hidden></aside>
+      </div>
+      <div class="legend">
+        <span><i class="dot dot-night"></i> we sleep here</span>
+        <span><i class="dot dot-stop"></i> stop on the way</span>
+        <span><i class="dot dot-option"></i> Day 9 option</span>
+        <span><i class="line line-main"></i> main route</span>
+        <span><i class="line line-alt"></i> Day 9 alternatives</span>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <h2 class="section-title">Three things to decide together</h2>
+      <p class="lede">Nothing is booked yet. Tap the option you'd rather have; it flows into the day-by-day.</p>
+      <div id="decisions" class="decisions"></div>
+    </section>
+
+    <section class="wrap stops-grid-wrap">
+      <h2 class="section-title">The stops</h2>
+      <div id="stops-grid" class="stops-grid"></div>
+    </section>
+  </main>
+
+  <!-- ================= HOTELS ================= -->
+  <main id="tab-hotels" class="tab" hidden>
+    <section class="page-head" style="background-image:url('photos/scenery/azora-beach-hotel.jpg')">
+      <div class="page-head-inner">
+        <p class="eyebrow">Where we sleep</p>
+        <h1>Nine nights, seven stops</h1>
+        <p>Thumbs up what you like, thumbs down what you don't, then crown one per stop. The total updates as you go.</p>
+      </div>
+    </section>
+
+    <div class="sticky-summary" id="hotel-summary"></div>
+
+    <section class="wrap controls">
+      <label class="check"><input type="checkbox" id="hide-down" /> hide the thumbs-down ones</label>
+      <label class="check"><input type="checkbox" id="price-per-night" /> Dhërmi & Himarë prices in the table are <b>per night</b> (default: for the whole 2-night stay, as Booking showed them)</label>
+      <button class="btn btn-ghost" id="copy-picks">Copy our picks</button>
+      <button class="btn btn-ghost btn-danger" id="reset-all">Reset everything</button>
+    </section>
+
+    <div id="hotel-stops"></div>
+  </main>
+
+  <!-- ================= FOOD ================= -->
+  <main id="tab-food" class="tab" hidden>
+    <section class="page-head" style="background-image:url('photos/scenery/berat-houses.jpg')">
+      <div class="page-head-inner">
+        <p class="eyebrow">Where we eat</p>
+        <h1>Tavernas, bakeries and one tasting menu</h1>
+        <p>Price bands are for two with a drink: € under 20 · €€ 20–40 · €€€ 40–70. Star the ones you want and they show up on the right day.</p>
+      </div>
+    </section>
+    <div id="food-groups" class="wrap"></div>
+    <section class="wrap">
+      <h2 class="section-title">Dish bucket list</h2>
+      <p class="lede">Tick them off as we go.</p>
+      <ul id="dishes" class="dishes"></ul>
+    </section>
+  </main>
+
+  <!-- ================= ITINERARY ================= -->
+  <main id="tab-itinerary" class="tab" hidden>
+    <section class="page-head" style="background-image:url('photos/scenery/benje-lengarica.jpg')">
+      <div class="page-head-inner">
+        <p class="eyebrow">Day by day</p>
+        <h1>Ten days, slowly</h1>
+        <p>Whatever we crown in the hotel and food tabs appears here. Everything is flexible.</p>
+      </div>
+    </section>
+    <div id="days" class="wrap days"></div>
+    <section class="wrap">
+      <h2 class="section-title">Practical notes</h2>
+      <dl id="practical" class="practical"></dl>
+    </section>
+    <footer class="footer">Nine nights, one loop, just the two of us. ♡
+      <div class="credits">Extra photos via Wikimedia Commons: Gjirokastër by Armin (<a href="https://commons.wikimedia.org/wiki/File:Gjirokaster_2016-2017.jpg">CC BY-SA 2.0</a>), Qeparo (<a href="https://commons.wikimedia.org/wiki/File:Qeparo-Strand2.jpg">CC BY-SA 3.0</a>), Grama Bay by Grtek (<a href="https://commons.wikimedia.org/wiki/File:Grama_Bay.JPG">CC BY-SA 3.0</a>). Hotel photos from Booking.com / Airbnb listings, for our eyes only.</div>
+    </footer>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" hidden>
+    <button class="lb-close" aria-label="Close">×</button>
+    <button class="lb-prev" aria-label="Previous">‹</button>
+    <img id="lb-img" alt="" />
+    <button class="lb-next" aria-label="Next">›</button>
+    <div class="lb-caption" id="lb-caption"></div>
+  </div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="data.js"></script>
+  <script src="hotels.js"></script>
+  <script src="routes.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="sync.js"></script>
+</body>
+</html>
