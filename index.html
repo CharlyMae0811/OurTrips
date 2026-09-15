@@ -41,7 +41,9 @@
   <main class="wrap">
     <div id="trips" class="trips"></div>
   </main>
+  <script src="config.js"></script>
   <script src="trips.js"></script>
+  <script src="shared/gate.js"></script>
   <script>
     document.getElementById("trips").innerHTML = window.TRIPS.map((t) => `
       <a class="trip" href="${t.slug}/index.html">

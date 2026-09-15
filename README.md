@@ -23,6 +23,10 @@ Hosting options:
 
 The `source/` folder (original Word doc and PowerPoint) is ignored by git because the .docx is 400 MB, far over GitHub's file limit.
 
+## Password
+
+`config.js` has a `password`. Every device is asked for it once (plus a first name for the votes) and remembers it. It keeps strangers and search engines out; it is not real security, the files are still public. Change the word to log everyone out. Set it to `null` for no gate.
+
 ## 2. Share picks live between devices
 
 Without this step every browser keeps its own picks. With it, everyone who opens the link sees the same board and changes appear live.
@@ -45,7 +49,7 @@ Without this step every browser keeps its own picks. With it, everyone who opens
    ```
 
 4. Project overview → gear → Project settings → "Your apps" → Web (`</>`) → register the app (no hosting) → copy the `firebaseConfig` object.
-5. Open `config.js`, paste it as the `firebase` value, and change `room` to any long random string (it acts as the password: only people who have the site link can vote).
+5. Open `config.js` and paste it as the `firebase` value. The shared board is named after the password (or set `room` explicitly).
 6. Commit and push. Open the site: the badge in the top right turns green, "live · shared with everyone on the link".
 
 Each device is asked for a first name the first time it votes, so thumbs show who liked what. Picks, stars, decisions, the dish checklist, the day-by-day plan and the packing list are all shared.

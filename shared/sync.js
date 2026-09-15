@@ -3,7 +3,8 @@
 (async function () {
   const cfg = window.SYNC_CONFIG;
   const App = window.App;
-  if (!cfg || !cfg.firebase || !cfg.firebase.databaseURL || !cfg.room) {
+  const room = cfg && (cfg.room || cfg.password);
+  if (!cfg || !cfg.firebase || !cfg.firebase.databaseURL || !room) {
     App && App.setLive(false, "this device only · set up config.js to share live");
     return;
   }
@@ -13,7 +14,7 @@
     const app = initializeApp(cfg.firebase);
     const db = getDatabase(app);
     const slug = (window.TRIP && window.TRIP.slug) || "trip";
-    const root = ref(db, `rooms/${cfg.room}/${slug}`);
+    const root = ref(db, `rooms/${String(room).replace(/[.#$\[\]\/]/g, "_")}/${slug}`);
 
     // first contact: if the shared board is empty but this device has picks, seed the board with them
     const snap = await get(root);

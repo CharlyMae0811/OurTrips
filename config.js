@@ -5,6 +5,9 @@
    4. Give `room` any long random string. Anyone who has the site link can vote, so keep the link between you two.
    Leave `firebase: null` and the site simply works per device, without sharing. */
 window.SYNC_CONFIG = {
+  /* Password for the whole site (keeps strangers out; not real security). Changing it logs every device out.
+     Set to null to make the site open. */
+  password: "gjipe",
   firebase: null,
   /* firebase: {
     apiKey: "…",
@@ -15,5 +18,6 @@ window.SYNC_CONFIG = {
     messagingSenderId: "…",
     appId: "…"
   }, */
-  room: "albania-2026-change-me-to-something-random"
+  /* Shared-board name. Leave null to reuse the password. */
+  room: null
 };
