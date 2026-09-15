@@ -423,3 +423,9 @@ html.locked body > *:not(.gate) { visibility: hidden; }
 .gate-card input:focus { outline: none; border-color: var(--sea); }
 .gate-card .btn { margin-top: 6px; }
 .gate-err { color: var(--rose); font-size: .85rem; }
+
+/* fixed anchors in the plan */
+.act.fixed { background: var(--sand); border-style: dashed; border-color: rgba(43,42,51,.12); }
+.act.fixed .grip { cursor: default; font-size: .85rem; letter-spacing: 0; }
+.act.fixed .aname { color: var(--muted); }
+.fixed-tag { font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 800; padding: 4px 6px; }

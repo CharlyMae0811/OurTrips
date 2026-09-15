@@ -391,12 +391,30 @@
   const actById = Object.fromEntries(ACTS.map((a) => [a.id, a]));
   const KIND_ICON = { drive: "🚗", swim: "🏊", food: "🍽", sight: "🏛", hike: "🥾", view: "🌄", wander: "🚶", romance: "💞", adventure: "🛶", logistics: "🧳" };
   function defaultOrder(n) { return ACTS.filter((a) => a.day === n && !a.optional).map((a) => a.id); }
+  /* drives, flights, check-ins are anchors: they stay where they are, the rest shuffles around them */
+  const isFixed = (a) => !!a && (a.fixed || a.kind === "drive" || a.kind === "logistics");
+  function normalizeOrder(n, order) {
+    const def = defaultOrder(n), fixedDef = def.filter((id) => isFixed(actById[id]));
+    let o = order.filter((id) => actById[id] && (!isFixed(actById[id]) || fixedDef.includes(id)));
+    // every anchor of this day must be present, in its default relative position
+    fixedDef.forEach((fid, k) => {
+      if (o.includes(fid)) return;
+      const prev = k > 0 ? o.indexOf(fixedDef[k - 1]) : -1;
+      o.splice(prev + 1, 0, fid);
+    });
+    // anchors keep their relative sequence
+    const anchorsInOrder = o.filter((id) => fixedDef.includes(id));
+    if (anchorsInOrder.join() !== fixedDef.join()) { let k = 0; o = o.map((id) => (fixedDef.includes(id) ? fixedDef[k++] : id)); }
+    // nothing goes before a leading anchor (you can't swim before you land)
+    if (def.length && isFixed(actById[def[0]])) { const i = o.indexOf(def[0]); if (i > 0) { o.splice(i, 1); o.unshift(def[0]); } }
+    return o;
+  }
   function dayOrder(n) {
     const p = state.plan && state.plan[n];
     const order = p && Array.isArray(p.order) ? p.order.filter((id) => actById[id]) : defaultOrder(n);
-    return order;
+    return normalizeOrder(n, order);
   }
-  function setDayOrder(n, order) { setPath(["plan", n, "order"], order.length ? order : ["__empty__"]); }
+  function setDayOrder(n, order) { order = normalizeOrder(n, order); setPath(["plan", n, "order"], order.length ? order : ["__empty__"]); }
   function cleanOrder(order) { return order.filter((id) => id !== "__empty__"); }
   function dayPool(n) {
     const inPlan = new Set(cleanOrder(dayOrder(n)));
@@ -437,13 +455,15 @@
       // the plan
       const dec = d.decision ? state.decisions[d.decision] : null;
       const order = cleanOrder(dayOrder(d.n));
+      const pinnedFirst = order.length > 0 && defaultOrder(d.n)[0] === order[0] && isFixed(actById[order[0]]);
       const rows = order.map((id, i) => {
         const a = actById[id]; if (!a) return "";
         const dim = a.decision && dec && a.opt !== dec ? "dim" : "";
         const moved = a.day !== d.n ? `<em class="opt-tag">from day ${a.day}</em>` : "";
+        const fx = isFixed(a);
         return `
-        <li class="act ${dim}" draggable="true" data-id="${id}" data-day="${d.n}">
-          <span class="grip" title="Drag to reorder">⋮⋮</span>
+        <li class="act ${dim} ${fx ? "fixed" : ""}" draggable="${fx ? "false" : "true"}" data-id="${id}" data-day="${d.n}" data-fixed="${fx ? 1 : 0}">
+          <span class="grip" title="${fx ? "Fixed: this one stays put" : "Drag to reorder"}">${fx ? "📌" : "⋮⋮"}</span>
           <span class="akind" title="${a.kind}">${KIND_ICON[a.kind] || "•"}</span>
           <div class="abody">
             <div class="aname">${a.time ? `<span class="atime">${esc(a.time)}</span>` : ""}${esc(a.name)} ${moved}${a.dur ? `<span class="adur">${esc(a.dur)}</span>` : ""}</div>
@@ -451,10 +471,11 @@
           </div>
           <div class="atools">
             <a class="maplink" href="${esc(a.maps)}" target="_blank" rel="noopener" title="Open in Google Maps">📍</a>
-            <button class="mini up" title="Move up" ${i === 0 ? "disabled" : ""}>▲</button>
+            ${fx ? `<span class="fixed-tag">fixed</span>` : `
+            <button class="mini up" title="Move up" ${i === 0 || (i === 1 && pinnedFirst) ? "disabled" : ""}>▲</button>
             <button class="mini down" title="Move down" ${i === order.length - 1 ? "disabled" : ""}>▼</button>
             <select class="mini moveday" title="Move to another day"><option value="">day…</option>${T.days.filter((x) => x.n !== d.n).map((x) => `<option value="${x.n}">Day ${x.n}</option>`).join("")}</select>
-            <button class="mini rm" title="Take out of the plan">✕</button>
+            <button class="mini rm" title="Take out of the plan">✕</button>`}
           </div>
         </li>`;
       }).join("");
@@ -490,7 +511,8 @@
   function wirePlan() {
     const move = (n, id, delta) => { const o = cleanOrder(dayOrder(n)); const i = o.indexOf(id); if (i < 0) return; const j = i + delta; if (j < 0 || j >= o.length) return; o.splice(i, 1); o.splice(j, 0, id); setDayOrder(n, o); renderItinerary(); };
     $$(".plan-list .act").forEach((li) => {
-      const id = li.dataset.id, n = +li.dataset.day;
+      const id = li.dataset.id, n = +li.dataset.day, fixed = li.dataset.fixed === "1";
+      if (!fixed) {
       $(".up", li).onclick = () => move(n, id, -1);
       $(".down", li).onclick = () => move(n, id, 1);
       $(".rm", li).onclick = () => { setDayOrder(n, cleanOrder(dayOrder(n)).filter((x) => x !== id)); renderItinerary(); };
@@ -501,7 +523,8 @@
         renderItinerary(); toast(`Moved to Day ${to}`);
         const el = document.getElementById(`day-${to}`); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       };
-      li.addEventListener("dragstart", (e) => { dragSrc = { id, n }; li.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); });
+      }
+      if (!fixed) li.addEventListener("dragstart", (e) => { dragSrc = { id, n }; li.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); });
       li.addEventListener("dragend", () => { li.classList.remove("dragging"); $$(".act.over").forEach((x) => x.classList.remove("over")); });
       li.addEventListener("dragover", (e) => { e.preventDefault(); li.classList.add("over"); });
       li.addEventListener("dragleave", () => li.classList.remove("over"));
