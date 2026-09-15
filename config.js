@@ -8,16 +8,15 @@ window.SYNC_CONFIG = {
   /* Password for the whole site (keeps strangers out; not real security). Changing it logs every device out.
      Set to null to make the site open. */
   password: "gjipe",
-  firebase: null,
-  /* firebase: {
-    apiKey: "…",
-    authDomain: "your-project.firebaseapp.com",
-    databaseURL: "https://your-project-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "your-project",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "…",
-    appId: "…"
-  }, */
+  firebase: {
+    apiKey: "AIzaSyAroakI1ZCu8YZXmgfi0xAusRuviHt7yUE",
+    authDomain: "ourtripsctvb.firebaseapp.com",
+    databaseURL: "https://ourtripsctvb-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "ourtripsctvb",
+    storageBucket: "ourtripsctvb.firebasestorage.app",
+    messagingSenderId: "416305156672",
+    appId: "1:416305156672:web:74d3e7702bc730fc0285a5"
+  },
   /* Shared-board name. Leave null to reuse the password. */
   room: null
 };
