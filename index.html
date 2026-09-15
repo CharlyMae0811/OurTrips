@@ -44,7 +44,7 @@
   <script src="trips.js"></script>
   <script>
     document.getElementById("trips").innerHTML = window.TRIPS.map((t) => `
-      <a class="trip" href="${t.slug}/">
+      <a class="trip" href="${t.slug}/index.html">
         <img src="${t.cover}" alt="" />
         <span class="status">${t.status}</span>
         <div class="t"><small>${t.dates}</small><b>${t.title}</b><span>${t.tagline}</span></div>
