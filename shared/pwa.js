@@ -12,7 +12,7 @@
   const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
   const el = document.createElement("div");
   el.className = "install-hint";
-  el.innerHTML = `<span>${isIOS ? "Add this to your home screen: tap <b>Share</b> then <b>Add to Home Screen</b>. It becomes a little app." : "Add this to your home screen from the browser menu (⋮ → Add to Home screen) and it becomes a little app."}</span><button aria-label="Dismiss">×</button>`;
+  el.innerHTML = `<span>${isIOS ? "Add this to your home screen: tap <b>Share</b> then <b>Add to Home Screen</b>. It becomes a little app." : "Make this a little app: browser menu ⋮ → <b>Install app</b> (or <b>Add to Home screen</b> on older phones)."}</span><button aria-label="Dismiss">×</button>`;
   el.querySelector("button").onclick = () => { el.remove(); localStorage.setItem("ourtrips-install-hint", "1"); };
   document.body.appendChild(el);
 })();
