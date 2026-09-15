@@ -541,3 +541,14 @@ html.locked body > *:not(.gate) { visibility: hidden; }
 .more .take span { text-transform: none; letter-spacing: 0; font-size: .72rem; }
 
 .update-toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 4500; background: var(--rose); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-weight: 800; font-size: .9rem; box-shadow: var(--shadow-lg); }
+
+/* three slots again */
+.slot { position: relative; flex-direction: column; }
+.slot.next { border-color: var(--rose); border-style: solid; box-shadow: 0 0 0 3px rgba(201,107,107,.15); }
+.slot.next .take { color: var(--rose); }
+.slot.selfie.has { border-color: rgba(201,107,107,.35); }
+.slot.scenery.has { border-color: rgba(31,95,122,.35); background: #f3f8fa; }
+.slot.video.has { border-color: rgba(201,162,79,.45); background: #fbf6ea; }
+.take small { font-size: .55rem; color: var(--rose); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.slot:not(.next) .take small { color: var(--muted); }
+.fromlib { display: inline-block; margin-top: 6px; font-size: .74rem; color: var(--muted); cursor: pointer; text-decoration: underline dotted; }

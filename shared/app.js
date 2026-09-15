@@ -630,25 +630,21 @@
     const doneN = order.filter((id) => state.done && state.done[id]).length;
     const picks = d.foodGroups.flatMap((gid) => (T.foodGroups.find((g) => g.id === gid) || { items: [] }).items.filter((f) => state.foodPick[f.id]).map((f) => foodById[f.id]));
     const me = localStorage.getItem("ourtrips-me") || "";
-    /* BeReal-ish, but on our own time: selfie first, then the view, then (optionally) a little video. Two taps, no timer. */
+    /* three slots side by side: selfie (front camera), the view (back camera), a little video. Selfie first, then the view — no timer. */
     const memStrip = (a) => {
       const selfies = memoriesFor(a.id, "selfie"), views = memoriesFor(a.id, "scenery"), vids = memoriesFor(a.id, "video");
-      const thumbs = [...selfies, ...views, ...vids].map((m) => `<button class="mthumb ${m.kind}" data-id="${m.id}" title="${esc(m.kind)} · ${esc(m.by || "")}">${m.thumb ? `<img src="${m.thumb}" alt="" />` : `<span>🎬</span>`}${m.kind === "video" ? `<i class="play">▶</i>` : ""}<em>${m.kind === "selfie" ? "🤳" : m.kind === "video" ? "🎥" : "🏞"}</em></button>`).join("");
-      let next;
-      if (!selfies.length) next = { kind: "selfie", label: "Selfie first", icon: "🤳", accept: "image/*", capture: "user", step: "1 of 2" };
-      else if (!views.length) next = { kind: "scenery", label: "Now the view", icon: "🏞", accept: "image/*", capture: "environment", step: "2 of 2" };
-      else if (!vids.length) next = { kind: "video", label: "A little video?", icon: "🎥", accept: "video/*", capture: "environment", step: "bonus" };
-      else next = null;
-      return `<div class="memstrip">
-        <div class="mthumbs">${thumbs}</div>
-        ${next ? `<label class="capture ${next.kind}"><input type="file" accept="${next.accept}" capture="${next.capture}" data-act="${a.id}" data-kind="${next.kind}" hidden />${next.icon} ${next.label}<small>${next.step}</small></label>` : `<span class="memdone">♡ all three, lovely</span>`}
-        <details class="more"><summary>more</summary>
-          <label class="take"><input type="file" accept="image/*" capture="user" data-act="${a.id}" data-kind="selfie" hidden />🤳<span>selfie</span></label>
-          <label class="take"><input type="file" accept="image/*" capture="environment" data-act="${a.id}" data-kind="scenery" hidden />🏞<span>view</span></label>
-          <label class="take"><input type="file" accept="video/*" capture="environment" data-act="${a.id}" data-kind="video" hidden />🎥<span>video</span></label>
-          <label class="take"><input type="file" accept="image/*,video/*" data-act="${a.id}" data-kind="scenery" hidden />🖼<span>from library</span></label>
-        </details>
-      </div>`;
+      const nextKind = !selfies.length ? "selfie" : !views.length ? "scenery" : !vids.length ? "video" : null;
+      const slot = (kind, ms, label, icon, accept, capture, step) => `
+        <div class="slot ${kind} ${ms.length ? "has" : ""} ${nextKind === kind ? "next" : ""}">
+          ${ms.map((m) => `<button class="mthumb" data-id="${m.id}" title="${esc(m.by || "")}">${m.thumb ? `<img src="${m.thumb}" alt="" />` : `<span>🎬</span>`}${m.kind === "video" ? `<i class="play">▶</i>` : ""}</button>`).join("")}
+          <label class="take"><input type="file" accept="${accept}" capture="${capture}" data-act="${a.id}" data-kind="${kind}" hidden />${icon}<span>${ms.length ? "another" : label}</span>${!ms.length && step ? `<small>${step}</small>` : ""}</label>
+        </div>`;
+      return `<div class="slots">
+          ${slot("selfie", selfies, "selfie", "🤳", "image/*", "user", "first")}
+          ${slot("scenery", views, "the view", "🏞", "image/*", "environment", "then")}
+          ${slot("video", vids, "little video", "🎥", "video/*", "environment", "bonus")}
+        </div>
+        <label class="fromlib"><input type="file" accept="image/*,video/*" data-act="${a.id}" data-kind="scenery" hidden />🖼 or pick from the library</label>`;
     };
     const steps = order.map((id, i) => {
       const a = actById[id]; const done = state.done && state.done[id]; const fx = isFixed(a); const canMem = !fx || a.kind === "logistics" && a.id === "fly";
@@ -684,11 +680,11 @@
       </div>` : hotelStop ? `<div class="tonight empty"><span class="wl">Tonight</span><b>No hotel picked for ${esc(T.hotelStops.find((x) => x.stop === hotelStop).name)} yet</b><a href="#hotels/stop-${hotelStop}">pick one</a></div>` : ""}
       <ol class="steps">${steps || `<li class="empty">Nothing planned today. Beach?</li>`}</ol>
       ${picks.length ? `<div class="today-food"><span class="wl">Where we said we'd eat</span>${picks.map((f) => `<div class="tf"><b>${esc(f.name)}</b> <span class="band">${esc(f.band)}</span><small>${esc(f.meal)} · ${esc(f.desc)}</small><a class="btn btn-ghost btn-sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.name + " " + f.group.name + " Albania")}" target="_blank" rel="noopener">📍 Map</a></div>`).join("")}</div>` : ""}
-      <p class="memo-tip">At each spot: selfie first, then the view, then a little video if you feel like it. Two taps, no timer. The camera opens straight away; "more" lets you add extras or pick from the library.</p>`;
+      <p class="memo-tip">At each spot: selfie first, then the view, then a little video if you feel like it. Each slot opens the camera straight away (front camera for the selfie). No timer, take your time.</p>`;
     $$(".daynav", box).forEach((b) => (b.onclick = () => { todayOverride = n + (+b.dataset.d); renderToday(); window.scrollTo({ top: 0, behavior: "smooth" }); }));
     const jt = $("#jump-today"); if (jt) jt.onclick = () => { todayOverride = null; renderToday(); };
     $$(".step input[type=checkbox]", box).forEach((c) => (c.onchange = () => { setPath(["done", c.closest(".step").dataset.id], c.checked); renderToday(); }));
-    $$(".take input, .capture input", box).forEach((inp) => (inp.onchange = async () => {
+    $$(".take input, .fromlib input", box).forEach((inp) => (inp.onchange = async () => {
       const file = inp.files && inp.files[0]; if (!file) return;
       const a = actById[inp.dataset.act]; const stop = T.stops.find((s) => s.id === a.stop);
       const kind = file.type.startsWith("video/") ? "video" : inp.dataset.kind;
