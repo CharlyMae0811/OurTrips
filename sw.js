@@ -1,6 +1,6 @@
 /* Service worker: keeps the app usable on a beach with no signal.
    Same-origin files and map tiles are cached as you use them; Firebase and fonts go straight to the network. */
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = `ourtrips-${VERSION}`;
 const SHELL = [
   "./", "./index.html", "./trips.js", "./config.js", "./manifest.webmanifest",

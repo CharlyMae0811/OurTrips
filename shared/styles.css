@@ -539,3 +539,5 @@ html.locked body > *:not(.gate) { visibility: hidden; }
 .more[open] { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .more .take { flex-direction: row; font-size: 1rem; gap: 4px; padding: 4px 8px; border: 1px solid rgba(43,42,51,.12); border-radius: 999px; }
 .more .take span { text-transform: none; letter-spacing: 0; font-size: .72rem; }
+
+.update-toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 4500; background: var(--rose); color: #fff; border: none; border-radius: 999px; padding: 12px 20px; font-weight: 800; font-size: .9rem; box-shadow: var(--shadow-lg); }
