@@ -1,8 +1,12 @@
-# Albania, 25 Sep – 4 Oct 2026
+# Our trips · CT ♡ VB
 
-A little site for planning our road trip: route map, hotel options with thumbs and picks, food, and the day-by-day that follows whatever we choose.
+One small site per trip: route map, hotel options with thumbs and picks, food, a drag-and-drop day-by-day with Google Maps links, and a his/hers/mutual packing list. `index.html` at the root lists the trips; each trip lives in its own folder (`albania-2026/`) and shares the styling and logic in `shared/`.
 
-It is plain HTML/CSS/JS, no build step. Open `index.html` to use it on one device; follow the two setups below to host it and share picks live.
+Plain HTML/CSS/JS, no build step. Open `index.html` to use it on one device; follow the two setups below to host it and share picks live.
+
+## Adding a trip
+
+Copy `albania-2026/` to a new folder, replace `data.js`, `hotels.js`, `routes.js`, `activities.js` and the photos, set `slug` in `data.js`, and add an entry to `trips.js`. Each trip gets its own shared board (`rooms/<room>/<slug>`) automatically.
 
 ## 1. Put it on GitHub and host it
 
@@ -44,7 +48,7 @@ Without this step every browser keeps its own picks. With it, everyone who opens
 5. Open `config.js`, paste it as the `firebase` value, and change `room` to any long random string (it acts as the password: only people who have the site link can vote).
 6. Commit and push. Open the site: the badge in the top right turns green, "live · shared with everyone on the link".
 
-Each device is asked for a first name the first time it votes, so thumbs show who liked what. Picks, stars, decisions and the dish checklist are shared.
+Each device is asked for a first name the first time it votes, so thumbs show who liked what. Picks, stars, decisions, the dish checklist, the day-by-day plan and the packing list are all shared.
 
 The Firebase config is not secret (it ships in every web app), the rules are what protect the data. On the free Spark plan this uses a rounding error of the quota.
 

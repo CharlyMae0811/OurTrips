@@ -1,5 +1,6 @@
 /* Albania road trip, 25 Sep – 4 Oct 2026. All content data lives here. */
 window.TRIP = {
+  slug: "albania-2026",
   title: "Albania",
   dates: "25 September – 4 October 2026",
   nights: 9,
@@ -46,7 +47,7 @@ window.TRIP = {
       id: "himare", name: "Himarë", kind: "night", lat: 40.101, lng: 19.745, day: "Nights 4–5 · 28–29 Sep", hotelStop: 3,
       photo: "photos/scenery/Himare.jpg",
       blurb: "The Riviera's most relaxed base: a long public beach, a harbour full of small boats, and an old village with castle ruins up the hill for sunset.",
-      activities: ["Boat day: Pigeon Cave, Thunder Cave, Blue Gem, Grama Bay, St Andrea beach (4–5 h)", "Old Himarë village (Fshat): castle ruins at golden hour", "Sunset raki at Kafe Kastro", "Tavern dinner at Lefteri's"]
+      activities: ["Small-group boat: Pigeon Cave, Thunder Cave, Blue Gem, Grama Bay, St Andrea beach (4–5 h)", "Old Himarë village (Fshat): castle ruins at golden hour", "Sunset raki at Kafe Kastro", "Tavern dinner at Lefteri's"]
     },
     {
       id: "portopalermo", name: "Porto Palermo", kind: "stop", lat: 40.0617, lng: 19.792, day: "Day 5 · Tue 29 Sep",
@@ -100,7 +101,7 @@ window.TRIP = {
       id: "tirana", name: "Tirana", kind: "night", lat: 41.3275, lng: 19.8187, day: "Night 9 · Sat 3 Oct", hotelStop: 7,
       photo: "photos/scenery/Tirana.jpg",
       blurb: "One evening in the capital: coffee and cake in the rotating Sky Club at sunset, dinner at Mullixhiu or Era, cardamom buns from Nöje for the flight.",
-      activities: ["Sky Club coffee & cake ~17:30", "Dinner at Mullixhiu (book) or Era in Blloku", "Cocktails at Mugo", "Nöje buns for the morning", "Leave hotel 06:45 for the 09:00 flight"]
+      activities: ["Sky Club coffee & cake ~17:30", "Dinner at Mullixhiu (book) or Era in Blloku", "Cocktails at Mugo", "Nöje buns for the morning", "At the airport by 07:00 for the 09:00 flight"]
     }
   ],
 
@@ -152,7 +153,7 @@ window.TRIP = {
         { name: "Homemade Food Lili", lat: 40.7075, lng: 19.944, icon: "🍽" }
       ] },
     { stop: 7, name: "Tirana / airport area", nights: 1, dates: "Sat 3 Oct", center: [41.38, 19.7], zoom: 10,
-      note: "Decision 2: city evening in Tirana (30 min to the airport) or something sleepier out near Durrës / Fushë-Krujë. We leave the hotel at 06:45.",
+      note: "Decision 2: city evening in Tirana (30 min to the airport) or something sleepier out near Durrës / Fushë-Krujë. We want to be at the airport by 07:00, so we leave Tirana by 06:20 or Fushë-Krujë by 06:45.",
       landmarks: [
         { name: "Tirana airport (TIA)", lat: 41.4147, lng: 19.7206, icon: "✈" },
         { name: "Skanderbeg Square", lat: 41.3275, lng: 19.8187, icon: "🏛" },
@@ -269,7 +270,7 @@ window.TRIP = {
       plan: [["Morning", "Gjipe: park at the top, 25–30 min walk down through the canyon"], ["Midday", "Free, wild, no clubs. Swim, snorkel, laze"], ["Walk", "Into the slot canyon behind the beach"], ["Late", "Vuno village, then a swim at Jal"]],
       mood: "Barefoot wild-beach day, our own hidden cove. Pack food, water, shade, water shoes." },
     { n: 4, date: "Mon 28 Sep", title: "Boat day & Himarë", hotelStop: 3, foodGroups: ["himare"], photo: "photos/scenery/wiki-grama.jpg",
-      plan: [["Move", "30 min south to Himarë, settle in"], ["Boat", "4–5 h along Karaburun: Pigeon Cave, Thunder Cave, Blue Gem, Grama Bay, St Andrea beach. Small group ~€40–60 pp, private ~€200–350"], ["Evening", "Old Himarë village: castle ruins, sunset, tavern dinner"]],
+      plan: [["Move", "30 min south to Himarë, settle in"], ["Boat", "4–5 h along Karaburun: Pigeon Cave, Thunder Cave, Blue Gem, Grama Bay, St Andrea beach. Small group ~€40–60 pp"], ["Evening", "Old Himarë village: castle ruins, sunset, tavern dinner"]],
       mood: "A day on the water, caves glowing blue. Weather fallback: swap with Day 5." },
     { n: 5, date: "Tue 29 Sep", title: "Porto Palermo, Borsh & Qeparo", hotelStop: 3, foodGroups: ["himare"], photo: "photos/scenery/porto-palermo-drone.jpg",
       plan: [["Morning", "Porto Palermo castle (~200 lek), swim in the sheltered bay"], ["Lunch", "Borsh: 7 km of near-empty pebble beach, taverna lunch"], ["Afternoon", "Bunec or Livadhi, whichever is quieter"], ["Evening", "Old Qeparo stone village at sunset"]],
@@ -287,17 +288,18 @@ window.TRIP = {
       plan: [["Option A", "Berat → Drizë (1.5 h), Holta Canyon wade, Elbasan hot soak, Tirana (1 h)"], ["Option B", "Berat → Tirana (2 h), Bovilla lake & Gamti viewpoint, trout lunch"], ["17:30", "Sky Club coffee & cake"], ["Evening", "Dinner at Mullixhiu or Era, Nöje for cardamom buns"]],
       mood: "Last full day. Pick your adventure, then a pretty Tirana evening." },
     { n: 10, date: "Sun 4 Oct", title: "Fly home", hotelStop: null, foodGroups: [], photo: "photos/scenery/llogara-pass.jpg",
-      plan: [["06:45", "Leave the hotel"], ["09:00", "Depart TIA"]],
-      mood: "The one early alarm of the whole trip." }
+      plan: [["06:20", "Leave Tirana (06:45 from Fushë-Krujë)"], ["07:00", "At the airport, two hours early"], ["09:00", "Depart TIA"]],
+      mood: "The one early alarm of the whole trip. Airport by 07:00." }
   ],
 
   practical: [
     ["Cash", "Lek for parking, small tavernas, Bënjë, Blue Eye, Met Kodra."],
     ["Gear", "Water shoes for Holta, Gjipe, Bënjë and every pebble beach. Dry bag for Holta."],
-    ["Book ahead", "Homemade Food Lili (2–3 days), Mullixhiu, Farma Sotira dinner, the boat."],
+    ["Book ahead", "Homemade Food Lili (2–3 days), Mullixhiu, Farma Sotira dinner, the small-group boat."],
     ["Weather", "Small rain risk in early October. Sensitive days: the boat (Day 4) and Holta (Day 9). Fallbacks: swap boat to Day 5, swap Holta for Bovilla."],
     ["Roads", "Llogara is winding but good. Holta's last stretch is gravel, fine in a normal car."],
     ["Skip", "Ksamil, Sarandë beaches, the Dhërmi strip clubs, Vlorë city beach."],
-    ["Budget", "Boat €80–120 small group or €200–350 private. Entries and parking under €20 total. Fuel ~€120–150 for the loop."]
+    ["Budget", "Boat €80–120 for two (small group). Entries and parking under €20 total. Fuel ~€120–150 for the loop."],
+    ["Airport", "Be at TIA by 07:00 for the 09:00 flight. Leave Tirana by 06:20, Fushë-Krujë by 06:45. Return the rental car first."]
   ]
 };

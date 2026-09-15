@@ -11,12 +11,13 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#home"><span class="brand-heart">♡</span> Albania <span class="brand-dates">25 Sep – 4 Oct 2026</span></a>
+    <a class="brand" href="../"><span class="brand-heart">♡</span> Our trips</a><span class="brand-sep">/</span><a class="brand" href="#home">Albania <span class="brand-dates">25 Sep – 4 Oct 2026</span></a>
     <nav class="tabs" aria-label="Sections">
       <a href="#home" data-tab="home">The trip</a>
       <a href="#hotels" data-tab="hotels">Where we sleep</a>
       <a href="#food" data-tab="food">Where we eat</a>
       <a href="#itinerary" data-tab="itinerary">Day by day</a>
+      <a href="#packing" data-tab="packing">Packing</a>
     </nav>
     <div class="me"><span id="who"></span><span id="live" class="live off">this device only</span></div>
   </header>
@@ -25,7 +26,7 @@
   <main id="tab-home" class="tab" hidden>
     <section class="hero" style="background-image:url('photos/scenery/llogara-pass.jpg')">
       <div class="hero-inner">
-        <p class="eyebrow">A road trip for two</p>
+        <p class="eyebrow">A road trip for two · CT ♡ VB</p>
         <h1>Albania</h1>
         <p class="hero-sub">25 September – 4 October 2026 · nine nights · one loop<br/>the coast while the water is warm, the mountains after</p>
         <a class="btn btn-light" href="#hotels">Help me pick the hotels ↓</a>
@@ -36,7 +37,7 @@
       <div class="stat"><b>9</b><span>nights</span></div>
       <div class="stat"><b>~700</b><span>km loop</span></div>
       <div class="stat"><b>23–24°</b><span>sea temperature</span></div>
-      <div class="stat"><b>1</b><span>early alarm (the last morning)</span></div>
+      <div class="stat"><b>07:00</b><span>at the airport on the last morning</span></div>
     </section>
 
     <section class="wrap">
@@ -110,9 +111,9 @@
   <main id="tab-itinerary" class="tab" hidden>
     <section class="page-head" style="background-image:url('photos/scenery/benje-lengarica.jpg')">
       <div class="page-head-inner">
-        <p class="eyebrow">Day by day</p>
+        <p class="eyebrow">Day by day · build our own</p>
         <h1>Ten days, slowly</h1>
-        <p>Whatever we crown in the hotel and food tabs appears here. Everything is flexible.</p>
+        <p>Drag things around, take them out, add ideas from the pool under each day, or move something to another day. Every pin opens Google Maps. Hotel and food picks appear here too.</p>
       </div>
     </section>
     <div id="days" class="wrap days"></div>
@@ -120,6 +121,18 @@
       <h2 class="section-title">Practical notes</h2>
       <dl id="practical" class="practical"></dl>
     </section>
+  </main>
+
+  <!-- ================= PACKING ================= -->
+  <main id="tab-packing" class="tab" hidden>
+    <section class="page-head" style="background-image:url('photos/scenery/gjipe-trail.jpg')">
+      <div class="page-head-inner">
+        <p class="eyebrow">Packing · CT ♡ VB</p>
+        <h1>One suitcase each, 20 kg between us</h1>
+        <p>Hers, his, and the things one of us brings for both. Tick as you pack; tap the initials on a shared item to claim it. Add whatever's missing.</p>
+      </div>
+    </section>
+    <div id="packing-lists" class="wrap"></div>
     <footer class="footer">Nine nights, one loop, just the two of us. ♡
       <div class="credits">Extra photos via Wikimedia Commons: Gjirokastër by Armin (<a href="https://commons.wikimedia.org/wiki/File:Gjirokaster_2016-2017.jpg">CC BY-SA 2.0</a>), Qeparo (<a href="https://commons.wikimedia.org/wiki/File:Qeparo-Strand2.jpg">CC BY-SA 3.0</a>), Grama Bay by Grtek (<a href="https://commons.wikimedia.org/wiki/File:Grama_Bay.JPG">CC BY-SA 3.0</a>). Hotel photos from Booking.com / Airbnb listings, for our eyes only.</div>
     </footer>
@@ -138,6 +151,8 @@
   <script src="data.js"></script>
   <script src="hotels.js"></script>
   <script src="routes.js"></script>
+  <script src="activities.js"></script>
+  <script src="../trips.js"></script>
   <script src="../config.js"></script>
   <script src="../shared/app.js"></script>
   <script src="../shared/sync.js"></script>

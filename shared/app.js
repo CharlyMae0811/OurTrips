@@ -1,14 +1,15 @@
 /* Albania trip planner. Vanilla JS, state in localStorage. */
 (function () {
   "use strict";
-  const T = window.TRIP, HOTELS = window.HOTELS, ROUTES = window.ROUTES;
-  const KEY = "albania-trip-v1";
+  const T = window.TRIP, HOTELS = window.HOTELS, ROUTES = window.ROUTES, ACTS = window.ACTIVITIES || [], PACK = window.PACKING || [];
+  const US = window.US || { her: { initials: "CT", name: "Charlotte" }, him: { initials: "VB", name: "V" } };
+  const KEY = `trip-${T.slug || "trip"}-v2`;
 
   /* ---------------- state ----------------
      Shared keys are synced to everyone (via sync.js, if configured); the rest stays on this device.
      votes: { itemId: { personName: 1 | -1 } }                                                  */
-  const SHARED = ["votes", "hotelPick", "foodPick", "decisions", "dishes", "perNight"];
-  const defaults = { votes: {}, hotelPick: {}, foodPick: {}, decisions: {}, dishes: {}, perNight: false, hideDown: false };
+  const SHARED = ["votes", "hotelPick", "foodPick", "decisions", "dishes", "perNight", "plan", "pack"];
+  const defaults = { votes: {}, hotelPick: {}, foodPick: {}, decisions: {}, dishes: {}, perNight: false, plan: {}, pack: {}, hideDown: false };
   let state = load();
   function load() {
     try {
@@ -30,7 +31,7 @@
   }
 
   /* who is voting on this device */
-  const ME_KEY = "albania-trip-me";
+  const ME_KEY = "ourtrips-me";
   let me = localStorage.getItem(ME_KEY) || "";
   function askName(force) {
     if (me && !force) return me;
@@ -85,6 +86,7 @@
     renderSummary(); renderFood();
     $("#price-per-night").checked = !!state.perNight;
     if (!$("#tab-itinerary").hidden) renderItinerary();
+    if (!$("#tab-packing").hidden) renderPacking();
   }
 
   /* ---------------- helpers ---------------- */
@@ -120,13 +122,14 @@
   const maps = {}; // id -> leaflet map
   function showTab() {
     const hash = (location.hash || "#home").slice(1).split("/")[0];
-    const tab = ["home", "hotels", "food", "itinerary"].includes(hash) ? hash : "home";
+    const tab = ["home", "hotels", "food", "itinerary", "packing"].includes(hash) ? hash : "home";
     $$(".tab").forEach((el) => (el.hidden = el.id !== `tab-${tab}`));
     $$(".tabs a").forEach((a) => a.classList.toggle("active", a.dataset.tab === tab));
     if (tab === "home") initHomeMap();
     if (tab === "hotels") initHotelMaps();
     Object.values(maps).forEach((m) => setTimeout(() => m.invalidateSize(), 50));
     if (tab === "itinerary") renderItinerary();
+    if (tab === "packing") renderPacking();
     window.scrollTo({ top: 0 });
     const sub = (location.hash || "").split("/")[1];
     if (sub) setTimeout(() => { const el = document.getElementById(sub); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
@@ -175,7 +178,7 @@
         <div class="sp-day">${esc(s.day)}</div>
         <h3>${esc(s.name)}</h3>
         <p>${esc(s.blurb)}</p>
-        <ul>${s.activities.map((a) => `<li>${esc(a)}</li>`).join("")}</ul>
+        <ul class="sp-acts">${stopActivities(s).map((a) => `<li>${esc(a.name)}${a.optional ? ' <em class="opt-tag">idea</em>' : ""} <a class="maplink" href="${esc(a.maps)}" target="_blank" rel="noopener" title="Open in Google Maps">📍</a></li>`).join("")}</ul>
         <div class="sp-links">
           ${hs ? `<a href="#hotels/stop-${hs.stop}">Hotels here ${pick ? "· " + esc(pick.name) : ""}</a>` : ""}
           ${s.kind !== "start" ? `<a href="#itinerary">Day by day</a>` : ""}
@@ -185,6 +188,11 @@
     $(".sp-close", panel).onclick = () => (panel.hidden = true);
     if (maps.home) maps.home.panTo([s.lat, s.lng], { animate: true });
     if (window.innerWidth <= 1000) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function stopActivities(s) {
+    const list = ACTS.filter((x) => x.stop === s.id && x.kind !== "drive");
+    return list.length ? list : (s.activities || []).map((n) => ({ name: n, maps: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(n + " Albania") }));
   }
 
   function renderDecisions() {
@@ -378,7 +386,32 @@
     $$("#dishes input").forEach((c) => (c.onchange = () => { setPath(["dishes", c.dataset.i], c.checked); renderFood(); }));
   }
 
-  /* ---------------- ITINERARY ---------------- */
+  /* ---------------- ITINERARY (build your own) ----------------
+     state.plan[day] = { order: [activityId, ...] }  — everything else for that day sits in the "more ideas" pool. */
+  const actById = Object.fromEntries(ACTS.map((a) => [a.id, a]));
+  const KIND_ICON = { drive: "🚗", swim: "🏊", food: "🍽", sight: "🏛", hike: "🥾", view: "🌄", wander: "🚶", romance: "💞", adventure: "🛶", logistics: "🧳" };
+  function defaultOrder(n) { return ACTS.filter((a) => a.day === n && !a.optional).map((a) => a.id); }
+  function dayOrder(n) {
+    const p = state.plan && state.plan[n];
+    const order = p && Array.isArray(p.order) ? p.order.filter((id) => actById[id]) : defaultOrder(n);
+    return order;
+  }
+  function setDayOrder(n, order) { setPath(["plan", n, "order"], order.length ? order : ["__empty__"]); }
+  function cleanOrder(order) { return order.filter((id) => id !== "__empty__"); }
+  function dayPool(n) {
+    const inPlan = new Set(cleanOrder(dayOrder(n)));
+    // everything placed on another day is not offered here
+    const elsewhere = new Set(); T.days.forEach((d) => { if (d.n !== n) cleanOrder(dayOrder(d.n)).forEach((id) => elsewhere.add(id)); });
+    return ACTS.filter((a) => a.day === n && !inPlan.has(a.id) && !elsewhere.has(a.id));
+  }
+  function mapsQuery(a) { try { return decodeURIComponent(new URL(a.maps).searchParams.get("query") || ""); } catch (e) { return ""; } }
+  function dayDirections(n) {
+    const pts = []; cleanOrder(dayOrder(n)).forEach((id) => { const a = actById[id]; if (!a || a.kind === "drive") return; const q = mapsQuery(a); if (q && !pts.includes(q)) pts.push(q); });
+    if (pts.length < 2) return null;
+    return "https://www.google.com/maps/dir/" + pts.slice(0, 10).map(encodeURIComponent).join("/");
+  }
+
+  let dragSrc = null;
   function renderItinerary() {
     const d1b = state.decisions.d1 === "b";
     $("#days").innerHTML = T.days.map((d) => {
@@ -390,7 +423,7 @@
       const hotelHtml = hotelStop ? `
         <div class="winner ${h ? "set" : ""}">
           <span class="wl">Sleep · ${esc(hs.name)}</span>
-          ${h ? `<img class="wimg" src="${hotelPhotoSrc(h)}" alt="" /><b>${esc(h.name)}</b><small>${esc(h.area)} · ${euro(stayTotal(h))}${h.nights > 1 ? ` for ${h.nights} nights` : ""}</small>` : `<b>Not picked yet</b><small>Crown one in <a href="#hotels/stop-${hotelStop}">Where we sleep</a>.</small>`}
+          ${h ? `<img class="wimg" src="${hotelPhotoSrc(h)}" alt="" /><b>${esc(h.name)}</b><small>${esc(h.area)} · ${euro(stayTotal(h))}${h.nights > 1 ? ` for ${h.nights} nights` : ""}</small> <a class="maplink" href="https://www.google.com/maps/search/?api=1&query=${h.lat},${h.lng}" target="_blank" rel="noopener">📍 map</a>` : `<b>Not picked yet</b><small>Crown one in <a href="#hotels/stop-${hotelStop}">Where we sleep</a>.</small>`}
           ${hotelNote ? `<small>${esc(hotelNote)}</small>` : ""}
         </div>` : `<div class="winner"><span class="wl">Sleep</span><b>On the plane home</b></div>`;
       // food winners
@@ -398,16 +431,41 @@
       const foodHtml = `
         <div class="winner ${picks.length ? "set" : ""}">
           <span class="wl">Eat</span>
-          ${picks.length ? `<ul>${picks.map((f) => `<li><b style="font-size:1rem">${esc(f.name)}</b> <span class="band" style="font-size:.75rem">${esc(f.band)}</span><small>${esc(f.meal)} · ${esc(f.group.name)}</small></li>`).join("")}</ul>` :
+          ${picks.length ? `<ul>${picks.map((f) => `<li><b style="font-size:1rem">${esc(f.name)}</b> <span class="band" style="font-size:.75rem">${esc(f.band)}</span> <a class="maplink" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.name + " " + f.group.name + " Albania")}" target="_blank" rel="noopener">📍</a><small>${esc(f.meal)} · ${esc(f.group.name)}</small></li>`).join("")}</ul>` :
             d.foodGroups.length ? `<b>Nothing starred yet</b><small>Star places in <a href="#food">Where we eat</a>.</small>` : `<b>Airport coffee</b><small>Nöje buns from the night before, if we're organised.</small>`}
         </div>`;
-      // plan rows (dim the unchosen Day 9 option)
+      // the plan
       const dec = d.decision ? state.decisions[d.decision] : null;
-      const plan = d.plan.map(([k, v]) => {
-        let dim = "";
-        if (dec && /^Option [AB]$/.test(k)) dim = k.endsWith(dec.toUpperCase()) ? "" : "dim";
-        return `<dt class="${dim}">${esc(k)}</dt><dd class="${dim}">${esc(v)}</dd>`;
+      const order = cleanOrder(dayOrder(d.n));
+      const rows = order.map((id, i) => {
+        const a = actById[id]; if (!a) return "";
+        const dim = a.decision && dec && a.opt !== dec ? "dim" : "";
+        const moved = a.day !== d.n ? `<em class="opt-tag">from day ${a.day}</em>` : "";
+        return `
+        <li class="act ${dim}" draggable="true" data-id="${id}" data-day="${d.n}">
+          <span class="grip" title="Drag to reorder">⋮⋮</span>
+          <span class="akind" title="${a.kind}">${KIND_ICON[a.kind] || "•"}</span>
+          <div class="abody">
+            <div class="aname">${a.time ? `<span class="atime">${esc(a.time)}</span>` : ""}${esc(a.name)} ${moved}${a.dur ? `<span class="adur">${esc(a.dur)}</span>` : ""}</div>
+            <div class="adesc">${esc(a.desc)}</div>
+          </div>
+          <div class="atools">
+            <a class="maplink" href="${esc(a.maps)}" target="_blank" rel="noopener" title="Open in Google Maps">📍</a>
+            <button class="mini up" title="Move up" ${i === 0 ? "disabled" : ""}>▲</button>
+            <button class="mini down" title="Move down" ${i === order.length - 1 ? "disabled" : ""}>▼</button>
+            <select class="mini moveday" title="Move to another day"><option value="">day…</option>${T.days.filter((x) => x.n !== d.n).map((x) => `<option value="${x.n}">Day ${x.n}</option>`).join("")}</select>
+            <button class="mini rm" title="Take out of the plan">✕</button>
+          </div>
+        </li>`;
       }).join("");
+      const pool = dayPool(d.n);
+      const poolHtml = pool.length ? `
+        <div class="pool">
+          <span class="wl">More ideas for this day · tap + to add</span>
+          <div class="chips">${pool.map((a) => `<button class="chip add" data-id="${a.id}" data-day="${d.n}" title="${esc(a.desc)}">${KIND_ICON[a.kind] || "•"} ${esc(a.name)}${a.dur ? ` <small>${esc(a.dur)}</small>` : ""} <b>+</b></button><a class="chipmap" href="${esc(a.maps)}" target="_blank" rel="noopener" title="Google Maps">📍</a>`).join("")}</div>
+        </div>` : "";
+      const dir = dayDirections(d.n);
+      const touched = state.plan && state.plan[d.n];
       return `
       <article class="day" id="day-${d.n}">
         <div class="day-photo"><img src="${d.photo}" alt="" loading="lazy" /><div class="dnum">Day ${d.n}</div></div>
@@ -415,12 +473,114 @@
           <div class="date">${esc(d.date)}</div>
           <h2>${esc(d.title)}</h2>
           <div class="mood">${esc(d.mood)}</div>
-          <dl class="plan">${plan}</dl>
+          <div class="daytools">
+            ${dir ? `<a class="btn btn-ghost btn-sm" href="${dir}" target="_blank" rel="noopener">🗺 Today's route in Google Maps</a>` : ""}
+            ${touched ? `<button class="btn btn-ghost btn-sm resetday" data-day="${d.n}">↺ back to the suggested plan</button>` : ""}
+          </div>
+          <ol class="plan-list" data-day="${d.n}">${rows || `<li class="empty">Nothing planned. A lazy day, or add something below.</li>`}</ol>
+          ${poolHtml}
           <div class="winners">${hotelHtml}${foodHtml}</div>
         </div>
       </article>`;
     }).join("");
     $("#practical").innerHTML = T.practical.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+    wirePlan();
+  }
+
+  function wirePlan() {
+    const move = (n, id, delta) => { const o = cleanOrder(dayOrder(n)); const i = o.indexOf(id); if (i < 0) return; const j = i + delta; if (j < 0 || j >= o.length) return; o.splice(i, 1); o.splice(j, 0, id); setDayOrder(n, o); renderItinerary(); };
+    $$(".plan-list .act").forEach((li) => {
+      const id = li.dataset.id, n = +li.dataset.day;
+      $(".up", li).onclick = () => move(n, id, -1);
+      $(".down", li).onclick = () => move(n, id, 1);
+      $(".rm", li).onclick = () => { setDayOrder(n, cleanOrder(dayOrder(n)).filter((x) => x !== id)); renderItinerary(); };
+      $(".moveday", li).onchange = (e) => {
+        const to = +e.target.value; if (!to) return;
+        setDayOrder(n, cleanOrder(dayOrder(n)).filter((x) => x !== id));
+        setDayOrder(to, cleanOrder(dayOrder(to)).concat(id));
+        renderItinerary(); toast(`Moved to Day ${to}`);
+        const el = document.getElementById(`day-${to}`); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      li.addEventListener("dragstart", (e) => { dragSrc = { id, n }; li.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", id); });
+      li.addEventListener("dragend", () => { li.classList.remove("dragging"); $$(".act.over").forEach((x) => x.classList.remove("over")); });
+      li.addEventListener("dragover", (e) => { e.preventDefault(); li.classList.add("over"); });
+      li.addEventListener("dragleave", () => li.classList.remove("over"));
+      li.addEventListener("drop", (e) => {
+        e.preventDefault(); li.classList.remove("over"); if (!dragSrc) return;
+        const targetDay = n, targetId = id;
+        if (dragSrc.n !== targetDay) { setDayOrder(dragSrc.n, cleanOrder(dayOrder(dragSrc.n)).filter((x) => x !== dragSrc.id)); }
+        const o = cleanOrder(dayOrder(targetDay)).filter((x) => x !== dragSrc.id);
+        const rect = li.getBoundingClientRect(); const after = e.clientY > rect.top + rect.height / 2;
+        const idx = o.indexOf(targetId) + (after ? 1 : 0);
+        o.splice(idx, 0, dragSrc.id); setDayOrder(targetDay, o); dragSrc = null; renderItinerary();
+      });
+    });
+    $$(".plan-list").forEach((ol) => {
+      ol.addEventListener("dragover", (e) => { e.preventDefault(); });
+      ol.addEventListener("drop", (e) => {
+        if (e.target !== ol && !e.target.classList.contains("empty")) return;
+        e.preventDefault(); if (!dragSrc) return; const n = +ol.dataset.day;
+        if (dragSrc.n !== n) setDayOrder(dragSrc.n, cleanOrder(dayOrder(dragSrc.n)).filter((x) => x !== dragSrc.id));
+        setDayOrder(n, cleanOrder(dayOrder(n)).filter((x) => x !== dragSrc.id).concat(dragSrc.id)); dragSrc = null; renderItinerary();
+      });
+    });
+    $$(".chip.add").forEach((b) => (b.onclick = () => { const n = +b.dataset.day; setDayOrder(n, cleanOrder(dayOrder(n)).concat(b.dataset.id)); renderItinerary(); }));
+    $$(".resetday").forEach((b) => (b.onclick = () => { setPath(["plan", +b.dataset.day], null); renderItinerary(); }));
+  }
+
+  /* ---------------- PACKING ---------------- */
+  function packItems() {
+    const extra = (state.pack && state.pack.extra) || {};
+    const custom = Object.keys(extra).filter((k) => extra[k]).map((k) => ({ id: k, ...extra[k], custom: true }));
+    const hidden = (state.pack && state.pack.hidden) || {};
+    return PACK.concat(custom).filter((p) => !hidden[p.id]);
+  }
+  function renderPacking() {
+    const box = $("#packing-lists"); if (!box) return;
+    const done = (state.pack && state.pack.done) || {}, owner = (state.pack && state.pack.owner) || {};
+    const lists = [
+      { key: "hers", title: `Hers · ${US.her.initials}`, sub: `${US.her.name}'s bag`, cls: "hers" },
+      { key: "his", title: `His · ${US.him.initials}`, sub: `${US.him.name}'s bag`, cls: "his" },
+      { key: "mutual", title: "Mutual", sub: "one of us brings it, tap the initials to claim", cls: "mutual" }
+    ];
+    const all = packItems();
+    const total = all.length, packed = all.filter((p) => done[p.id]).length;
+    box.innerHTML = `
+      <div class="pack-progress"><div class="bar"><i style="width:${total ? Math.round((packed / total) * 100) : 0}%"></i></div><span>${packed} of ${total} packed · 20 kg between us, so keep it light</span></div>
+      <div class="pack-cols">${lists.map((l) => {
+        const items = all.filter((p) => p.list === l.key);
+        const cats = [...new Set(items.map((p) => p.cat || "Other"))];
+        return `
+        <section class="pack-col ${l.cls}">
+          <h2>${l.title}</h2><div class="pack-sub">${l.sub} · ${items.filter((p) => done[p.id]).length}/${items.length}</div>
+          ${cats.map((c) => `
+            <div class="pack-cat">${esc(c)}</div>
+            <ul class="pack-list">${items.filter((p) => (p.cat || "Other") === c).map((p) => `
+              <li class="pack-item ${done[p.id] ? "done" : ""}" data-id="${p.id}">
+                <label><input type="checkbox" ${done[p.id] ? "checked" : ""} /><span class="pname">${esc(p.name)}${p.note ? `<small>${esc(p.note)}</small>` : ""}</span></label>
+                ${l.key === "mutual" ? `<span class="owners">${[US.her.initials, US.him.initials].map((ini) => `<button class="ini ${owner[p.id] === ini ? "on" : ""}" data-ini="${ini}" title="${ini} brings it">${ini}</button>`).join("")}</span>` : ""}
+                <button class="mini rm" title="Remove">✕</button>
+              </li>`).join("")}</ul>`).join("")}
+          <form class="pack-add" data-list="${l.key}"><input type="text" placeholder="add something…" maxlength="60" required /><button class="btn btn-primary btn-sm" type="submit">+</button></form>
+        </section>`; }).join("")}</div>`;
+    $$(".pack-item", box).forEach((li) => {
+      const id = li.dataset.id;
+      $("input[type=checkbox]", li).onchange = (e) => { setPath(["pack", "done", id], e.target.checked); renderPacking(); };
+      $$(".ini", li).forEach((b) => (b.onclick = () => { setPath(["pack", "owner", id], owner[id] === b.dataset.ini ? null : b.dataset.ini); renderPacking(); }));
+      $(".rm", li).onclick = () => {
+        const custom = id.startsWith("px-");
+        if (custom) setPath(["pack", "extra", id], null); else setPath(["pack", "hidden", id], true);
+        renderPacking();
+      };
+    });
+    $$(".pack-add", box).forEach((f) => (f.onsubmit = (e) => {
+      e.preventDefault(); const inp = $("input", f); const name = inp.value.trim(); if (!name) return;
+      const id = "px-" + Date.now().toString(36);
+      setPath(["pack", "extra", id], { name, list: f.dataset.list, cat: "Added by us" }); renderPacking();
+    }));
+    const hiddenCount = Object.keys((state.pack && state.pack.hidden) || {}).length;
+    if (hiddenCount) box.insertAdjacentHTML("beforeend", `<p class="lede" style="text-align:center"><button class="btn btn-ghost btn-sm" id="unhide-pack">Bring back ${hiddenCount} removed suggestion${hiddenCount > 1 ? "s" : ""}</button></p>`);
+    const ub = $("#unhide-pack"); if (ub) ub.onclick = () => { setPath(["pack", "hidden"], null); renderPacking(); };
   }
 
   /* ---------------- lightbox ---------------- */

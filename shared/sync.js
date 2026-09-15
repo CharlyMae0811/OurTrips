@@ -12,7 +12,8 @@
     const { getDatabase, ref, onValue, update, set, get, goOnline } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
     const app = initializeApp(cfg.firebase);
     const db = getDatabase(app);
-    const root = ref(db, `rooms/${cfg.room}`);
+    const slug = (window.TRIP && window.TRIP.slug) || "trip";
+    const root = ref(db, `rooms/${cfg.room}/${slug}`);
 
     // first contact: if the shared board is empty but this device has picks, seed the board with them
     const snap = await get(root);
