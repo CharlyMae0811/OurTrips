@@ -8,13 +8,13 @@ It is plain HTML/CSS/JS, no build step. Open `index.html` to use it on one devic
 
 ```bash
 cd /Users/maedler/Albania
-git remote add origin git@github.com:YOUR-USER/albania-trip.git   # create the repo on github.com first (empty, no README)
+git remote add origin https://github.com/CharlyMae0811/OurTrips.git   # create the repo on github.com first (empty, no README)
 git push -u origin main
 ```
 
 Hosting options:
 
-- GitHub Pages (Settings → Pages → "Deploy from a branch" → `main` / root). Free only for public repos; a private repo needs GitHub Pro. The site then lives at `https://YOUR-USER.github.io/albania-trip/`.
+- GitHub Pages (Settings → Pages → "Deploy from a branch" → `main` / root). Free only for public repos; a private repo needs GitHub Pro. The site then lives at `https://charlymae0811.github.io/OurTrips/`.
 - Keep the repo private and use Netlify or Cloudflare Pages instead: sign in with GitHub, "Import from Git", pick this repo, no build command, publish directory `/`. Free, and every `git push` redeploys in about a minute.
 
 The `source/` folder (original Word doc and PowerPoint) is ignored by git because the .docx is 400 MB, far over GitHub's file limit.
