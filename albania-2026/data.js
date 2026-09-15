@@ -1,6 +1,7 @@
 /* Albania road trip, 25 Sep – 4 Oct 2026. All content data lives here. */
 window.TRIP = {
   slug: "albania-2026",
+  start: "2026-09-25",
   title: "Albania",
   dates: "25 September – 4 October 2026",
   nights: 9,

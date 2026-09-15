@@ -1,0 +1,16 @@
+{
+  "name": "Our trips · CT ♡ VB",
+  "short_name": "Our trips",
+  "description": "Where we go, where we sleep, where we eat, what we remember.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf6f0",
+  "theme_color": "#1f5f7a",
+  "icons": [
+    { "src": "shared/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "shared/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "shared/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -32,6 +32,10 @@
         return update(root, { [key]: value === undefined ? null : value }).catch((e) => { console.error(e); App.setLive(false, "offline · changes saved on this device"); });
       }
     };
+    // memories live beside the board (thumbnails are bigger, so they get their own listener)
+    const memRoot = ref(db, `rooms/${String(room).replace(/[.#$\[\]\/]/g, "_")}/${slug}-memories`);
+    window.Sync.writeMem = (id, entry) => update(memRoot, { [id]: entry === undefined ? null : entry }).catch((e) => console.error(e));
+    if (window.Mem) onValue(memRoot, (s) => window.Mem.setRemote(s.val() || {}), (err) => console.error(err));
     onValue(root, (s) => { App.applyRemote(s.val()); App.setLive(true); }, (err) => { console.error(err); App.setLive(false, "could not connect · check the database rules"); });
     goOnline(db);
   } catch (e) {

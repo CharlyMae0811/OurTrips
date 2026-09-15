@@ -56,6 +56,14 @@ Each device is asked for a first name the first time it votes, so thumbs show wh
 
 The Firebase config is not secret (it ships in every web app), the rules are what protect the data. On the free Spark plan this uses a rounding error of the quota.
 
+## On the road: the phone app
+
+Open the site on your phone, then Share → "Add to Home Screen" (iPhone) or menu → "Add to Home screen" (Android). It opens full-screen like an app and keeps working with no signal (pages, photos and the map tiles you've already looked at are cached).
+
+- **Today** shows the current day automatically: tonight's hotel, the plan as a checklist with a Navigate button per stop, and the places we starred to eat.
+- Each stop has three memory slots: a scenery shot, a selfie and a little video. Tip: shoot with the Camera app first (so it's in your photo roll and geotagged), then tap the slot and pick it from the library. The full-size file stays on the phone that took it; a small thumbnail plus the location goes to the shared board so both phones see it.
+- **Memories** is the map of everything we took, plus a gallery by day. Location comes from the photo's geotag when it has one, otherwise from the phone at the moment you attach it, otherwise the planned spot.
+
 ## Editing content
 
 - `data.js`: stops, activities, food places, itinerary days, decisions, practical notes.

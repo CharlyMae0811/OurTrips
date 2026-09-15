@@ -15,8 +15,8 @@
     <form class="gate-card" autocomplete="off">
       <div class="gate-mono">${us.her.initials}<span>♡</span>${us.him.initials}</div>
       <p class="gate-sub">Our trips. Just for the two of us.</p>
-      <label>Password<input type="password" name="pw" autofocus required /></label>
-      <label>Your first name<input type="text" name="me" maxlength="24" placeholder="so we know who voted" value="${(localStorage.getItem(ME) || "").replace(/"/g, "")}" /></label>
+      <label>Password<input type="password" name="pw" autocomplete="current-password" autofocus required /></label>
+      <label>Your first name<input type="text" name="me" autocomplete="given-name" maxlength="24" placeholder="so we know who voted" value="${(localStorage.getItem(ME) || "").replace(/"/g, "")}" /></label>
       <button type="submit" class="btn btn-primary">Come in ♡</button>
       <div class="gate-err" hidden>That's not it. Try again?</div>
     </form>`;

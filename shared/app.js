@@ -8,8 +8,8 @@
   /* ---------------- state ----------------
      Shared keys are synced to everyone (via sync.js, if configured); the rest stays on this device.
      votes: { itemId: { personName: 1 | -1 } }                                                  */
-  const SHARED = ["votes", "hotelPick", "foodPick", "decisions", "dishes", "perNight", "plan", "pack"];
-  const defaults = { votes: {}, hotelPick: {}, foodPick: {}, decisions: {}, dishes: {}, perNight: false, plan: {}, pack: {}, hideDown: false };
+  const SHARED = ["votes", "hotelPick", "foodPick", "decisions", "dishes", "perNight", "plan", "pack", "done"];
+  const defaults = { votes: {}, hotelPick: {}, foodPick: {}, decisions: {}, dishes: {}, perNight: false, plan: {}, pack: {}, done: {}, hideDown: false };
   let state = load();
   function load() {
     try {
@@ -87,6 +87,7 @@
     $("#price-per-night").checked = !!state.perNight;
     if (!$("#tab-itinerary").hidden) renderItinerary();
     if (!$("#tab-packing").hidden) renderPacking();
+    if (!$("#tab-today").hidden) renderToday();
   }
 
   /* ---------------- helpers ---------------- */
@@ -122,7 +123,7 @@
   const maps = {}; // id -> leaflet map
   function showTab() {
     const hash = (location.hash || "#home").slice(1).split("/")[0];
-    const tab = ["home", "hotels", "food", "itinerary", "packing"].includes(hash) ? hash : "home";
+    const tab = ["home", "hotels", "food", "itinerary", "packing", "today", "memories"].includes(hash) ? hash : "home";
     $$(".tab").forEach((el) => (el.hidden = el.id !== `tab-${tab}`));
     $$(".tabs a").forEach((a) => a.classList.toggle("active", a.dataset.tab === tab));
     if (tab === "home") initHomeMap();
@@ -130,6 +131,8 @@
     Object.values(maps).forEach((m) => setTimeout(() => m.invalidateSize(), 50));
     if (tab === "itinerary") renderItinerary();
     if (tab === "packing") renderPacking();
+    if (tab === "today") renderToday();
+    if (tab === "memories") renderMemories();
     window.scrollTo({ top: 0 });
     const sub = (location.hash || "").split("/")[1];
     if (sub) setTimeout(() => { const el = document.getElementById(sub); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
@@ -606,19 +609,152 @@
     const ub = $("#unhide-pack"); if (ub) ub.onclick = () => { setPath(["pack", "hidden"], null); renderPacking(); };
   }
 
+  /* ---------------- TODAY (the on-the-road view) ---------------- */
+  let todayOverride = null;
+  function currentDayN() {
+    if (!T.start) return 1;
+    const start = new Date(T.start + "T00:00:00"); const n = Math.floor((Date.now() - start) / 86400000) + 1;
+    return Math.min(Math.max(n, 1), T.days.length);
+  }
+  const navLink = (a) => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapsQuery(a) || a.name)}&travelmode=driving`;
+  function memoriesFor(actId, kind) { return Mem ? Mem.all().filter((m) => m.actId === actId && (!kind || m.kind === kind)) : []; }
+  function renderToday() {
+    const box = $("#today-view"); if (!box) return;
+    const n = todayOverride || currentDayN(); const d = T.days.find((x) => x.n === n); if (!d) return;
+    const isToday = n === currentDayN() && T.start && Date.now() >= new Date(T.start + "T00:00:00");
+    const d1b = state.decisions.d1 === "b";
+    let hotelStop = d.hotelStop; if (d1b && hotelStop === 2) hotelStop = 3;
+    const h = hotelStop && state.hotelPick[hotelStop] ? hotelById[state.hotelPick[hotelStop]] : null;
+    const dec = d.decision ? state.decisions[d.decision] : null;
+    const order = cleanOrder(dayOrder(n)).filter((id) => { const a = actById[id]; return a && !(a.decision && dec && a.opt !== dec); });
+    const doneN = order.filter((id) => state.done && state.done[id]).length;
+    const picks = d.foodGroups.flatMap((gid) => (T.foodGroups.find((g) => g.id === gid) || { items: [] }).items.filter((f) => state.foodPick[f.id]).map((f) => foodById[f.id]));
+    const me = localStorage.getItem("ourtrips-me") || "";
+    const slot = (a, kind, label, icon, accept) => {
+      const ms = memoriesFor(a.id, kind);
+      return `<div class="slot ${ms.length ? "has" : ""}">
+        ${ms.map((m) => `<button class="mthumb" data-id="${m.id}" title="${esc(m.by || "")}">${m.thumb ? `<img src="${m.thumb}" alt="" />` : `<span>🎬</span>`}${m.kind === "video" ? `<i class="play">▶</i>` : ""}</button>`).join("")}
+        <label class="take" title="${label}"><input type="file" accept="${accept}" data-act="${a.id}" data-kind="${kind}" hidden />${icon}<span>${ms.length ? "another" : label}</span></label>
+      </div>`;
+    };
+    const steps = order.map((id, i) => {
+      const a = actById[id]; const done = state.done && state.done[id]; const fx = isFixed(a); const canMem = !fx || a.kind === "logistics" && a.id === "fly";
+      return `
+      <li class="step ${done ? "done" : ""} ${fx ? "fixed" : ""}" data-id="${id}">
+        <label class="stepcheck"><input type="checkbox" ${done ? "checked" : ""} /><span class="num">${i + 1}</span></label>
+        <div class="stepbody">
+          <div class="stephead">${a.time ? `<span class="atime">${esc(a.time)}</span>` : ""}<b>${KIND_ICON[a.kind] || ""} ${esc(a.name)}</b>${a.dur ? `<span class="adur">${esc(a.dur)}</span>` : ""}</div>
+          <div class="adesc">${esc(a.desc)}</div>
+          <div class="stepbtns">
+            <a class="btn btn-primary btn-sm" href="${navLink(a)}" target="_blank" rel="noopener">🧭 Navigate</a>
+            <a class="btn btn-ghost btn-sm" href="${esc(a.maps)}" target="_blank" rel="noopener">📍 Map</a>
+          </div>
+          ${canMem ? `<div class="slots">
+            ${slot(a, "scenery", "scenery shot", "🏞", "image/*")}
+            ${slot(a, "selfie", "selfie", "🤳", "image/*")}
+            ${slot(a, "video", "little video", "🎥", "video/*")}
+          </div>` : ""}
+        </div>
+      </li>`;
+    }).join("");
+    box.innerHTML = `
+      <div class="today-head">
+        <button class="mini daynav" data-d="-1" ${n === 1 ? "disabled" : ""}>‹</button>
+        <div class="today-title"><small>${esc(d.date)} ${isToday ? "· today" : ""}</small><h2>Day ${n} · ${esc(d.title)}</h2><div class="mood">${esc(d.mood)}</div></div>
+        <button class="mini daynav" data-d="1" ${n === T.days.length ? "disabled" : ""}>›</button>
+      </div>
+      <div class="today-tools">
+        ${todayOverride && todayOverride !== currentDayN() ? `<button class="btn btn-ghost btn-sm" id="jump-today">↩ back to today</button>` : ""}
+        <span class="progress-pill">${doneN}/${order.length} done</span>
+        <a class="btn btn-ghost btn-sm" href="#itinerary/day-${n}">✎ edit this day</a>
+      </div>
+      ${h ? `<div class="tonight">
+        <img src="${hotelPhotoSrc(h)}" alt="" />
+        <div><span class="wl">Tonight · ${esc(T.hotelStops.find((x) => x.stop === hotelStop).name)}</span><b>${esc(h.name)}</b><small>${esc(h.address || h.area)}</small>
+          <div class="stepbtns"><a class="btn btn-primary btn-sm" href="https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}&travelmode=driving" target="_blank" rel="noopener">🧭 Navigate</a><a class="btn btn-ghost btn-sm" href="${esc(h.url)}" target="_blank" rel="noopener">Booking ↗</a></div></div>
+      </div>` : hotelStop ? `<div class="tonight empty"><span class="wl">Tonight</span><b>No hotel picked for ${esc(T.hotelStops.find((x) => x.stop === hotelStop).name)} yet</b><a href="#hotels/stop-${hotelStop}">pick one</a></div>` : ""}
+      <ol class="steps">${steps || `<li class="empty">Nothing planned today. Beach?</li>`}</ol>
+      ${picks.length ? `<div class="today-food"><span class="wl">Where we said we'd eat</span>${picks.map((f) => `<div class="tf"><b>${esc(f.name)}</b> <span class="band">${esc(f.band)}</span><small>${esc(f.meal)} · ${esc(f.desc)}</small><a class="btn btn-ghost btn-sm" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.name + " " + f.group.name + " Albania")}" target="_blank" rel="noopener">📍 Map</a></div>`).join("")}</div>` : ""}
+      <p class="memo-tip">Memories tip: shoot with your Camera app first (it stays in your photo roll and keeps the location), then tap a slot and pick it from the library. Or tap a slot and take it right there.</p>`;
+    $$(".daynav", box).forEach((b) => (b.onclick = () => { todayOverride = n + (+b.dataset.d); renderToday(); window.scrollTo({ top: 0, behavior: "smooth" }); }));
+    const jt = $("#jump-today"); if (jt) jt.onclick = () => { todayOverride = null; renderToday(); };
+    $$(".step input[type=checkbox]", box).forEach((c) => (c.onchange = () => { setPath(["done", c.closest(".step").dataset.id], c.checked); renderToday(); }));
+    $$(".take input", box).forEach((inp) => (inp.onchange = async () => {
+      const file = inp.files && inp.files[0]; if (!file) return;
+      const a = actById[inp.dataset.act]; const stop = T.stops.find((s) => s.id === a.stop);
+      toast("Saving…");
+      try { await Mem.add(file, { day: n, actId: a.id, actName: a.name, kind: inp.dataset.kind, by: me, fallback: stop ? { lat: stop.lat, lng: stop.lng } : null }); toast("Saved ♡"); }
+      catch (e) { console.error(e); toast("Couldn't save that one"); }
+      renderToday();
+    }));
+    $$(".mthumb", box).forEach((b) => (b.onclick = () => openMemory(b.dataset.id)));
+  }
+
+  /* ---------------- MEMORIES (map + gallery) ---------------- */
+  async function openMemory(id) {
+    const m = Mem.all().find((x) => x.id === id); if (!m) return;
+    const url = (await Mem.localUrl(id)) || m.thumb;
+    const cap = `${m.actName || ""} · Day ${m.day}${m.by ? " · " + m.by : ""}${m.src ? " · " + (m.src === "photo" ? "geotag from the photo" : m.src === "phone" ? "phone location" : "planned spot") : ""}`;
+    if (m.kind === "video" && url && url.startsWith("blob:")) {
+      const lbx = $("#lightbox"); lbx.hidden = false; $("#lb-img").hidden = true;
+      let v = $("#lb-video"); if (!v) { v = document.createElement("video"); v.id = "lb-video"; v.controls = true; v.playsInline = true; lbx.insertBefore(v, $("#lb-caption")); }
+      v.hidden = false; v.src = url; $("#lb-caption").textContent = cap; $(".lb-prev").hidden = true; $(".lb-next").hidden = true;
+      return;
+    }
+    if (!url) { toast("The full video is on the phone that recorded it"); return; }
+    openLightbox([url], 0, cap);
+  }
+  function renderMemories() {
+    const box = $("#memories-list"); if (!box) return;
+    const all = Mem ? Mem.all() : [];
+    const byDay = {}; all.forEach((m) => { (byDay[m.day] = byDay[m.day] || []).push(m); });
+    const me = localStorage.getItem("ourtrips-me") || "";
+    box.innerHTML = all.length ? Object.keys(byDay).sort((a, b) => a - b).map((dn) => {
+      const d = T.days.find((x) => x.n === +dn) || { title: "" };
+      return `<section class="memday"><h2>Day ${dn} <span>· ${esc(d.title)}</span></h2>
+        <div class="memgrid">${byDay[dn].map((m) => `
+          <figure class="mem" data-id="${m.id}">
+            <button class="memopen">${m.thumb ? `<img src="${m.thumb}" alt="" loading="lazy" />` : `<span class="noimg">🎬</span>`}${m.kind === "video" ? `<i class="play">▶</i>` : ""}</button>
+            <figcaption><b>${esc(m.actName || "")}</b><small>${m.kind === "selfie" ? "🤳" : m.kind === "video" ? "🎥" : "🏞"} ${m.by ? esc(m.by) : ""} · ${new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}${m.lat ? "" : " · no location"}</small>
+            ${m.by === me || !m.by ? `<button class="mini rm" title="Delete">✕</button>` : ""}</figcaption>
+          </figure>`).join("")}</div></section>`;
+    }).join("") : `<p class="lede" style="text-align:center">No memories yet. They'll appear here as we take them from the Today tab: a scenery shot, a selfie and a little video at each spot.</p>`;
+    $$(".memopen", box).forEach((b) => (b.onclick = () => openMemory(b.closest(".mem").dataset.id)));
+    $$(".mem .rm", box).forEach((b) => (b.onclick = async () => { if (confirm("Delete this memory?")) { await Mem.remove(b.closest(".mem").dataset.id); renderMemories(); } }));
+    renderMemoriesMap(all);
+  }
+  let memLayer = null;
+  function renderMemoriesMap(all) {
+    if (!$("#map-memories")) return;
+    if (!maps.mem) { maps.mem = L.map("map-memories", { scrollWheelZoom: false }); tiles(maps.mem); L.polyline(ROUTES.main, { color: "#1f5f7a", weight: 3, opacity: 0.5 }).addTo(maps.mem); }
+    if (memLayer) memLayer.remove();
+    memLayer = L.layerGroup().addTo(maps.mem);
+    const located = all.filter((m) => m.lat && m.lng);
+    located.forEach((m) => {
+      const icon = L.divIcon({ className: "", html: `<div class="mempin ${m.kind}">${m.thumb ? `<img src="${m.thumb}" alt="" />` : "🎬"}</div>`, iconSize: [46, 46], iconAnchor: [23, 46] });
+      L.marker([m.lat, m.lng], { icon }).addTo(memLayer).on("click", () => openMemory(m.id)).bindTooltip(`${esc(m.actName || "")} · Day ${m.day}`, { direction: "top", offset: [0, -44] });
+    });
+    setTimeout(() => { maps.mem.invalidateSize(); if (located.length) maps.mem.fitBounds(L.latLngBounds(located.map((m) => [m.lat, m.lng])).pad(0.3), { maxZoom: 13 }); else maps.mem.fitBounds(L.latLngBounds(T.stops.map((s) => [s.lat, s.lng])).pad(0.05)); }, 60);
+    const c = $("#mem-count"); if (c) c.textContent = `${all.length} memor${all.length === 1 ? "y" : "ies"} · ${located.length} on the map`;
+  }
+  if (window.Mem) Mem.onChange(() => { if (!$("#tab-memories").hidden) renderMemories(); if (!$("#tab-today").hidden) renderToday(); });
+
   /* ---------------- lightbox ---------------- */
   let lb = { photos: [], i: 0, cap: "" };
   function openLightbox(photos, i, cap) {
-    lb = { photos, i, cap }; showLb(); $("#lightbox").hidden = false;
+    lb = { photos, i, cap }; const v = $("#lb-video"); if (v) { v.pause(); v.hidden = true; v.removeAttribute("src"); }
+    $("#lb-img").hidden = false; $(".lb-prev").hidden = photos.length < 2; $(".lb-next").hidden = photos.length < 2;
+    showLb(); $("#lightbox").hidden = false;
   }
+  function closeLightbox() { $("#lightbox").hidden = true; const v = $("#lb-video"); if (v) { v.pause(); v.removeAttribute("src"); } }
   function showLb() { $("#lb-img").src = lb.photos[lb.i]; $("#lb-caption").textContent = `${lb.cap} · ${lb.i + 1}/${lb.photos.length}`; }
-  $(".lb-close").onclick = () => ($("#lightbox").hidden = true);
+  $(".lb-close").onclick = closeLightbox;
   $(".lb-prev").onclick = () => { lb.i = (lb.i - 1 + lb.photos.length) % lb.photos.length; showLb(); };
   $(".lb-next").onclick = () => { lb.i = (lb.i + 1) % lb.photos.length; showLb(); };
-  $("#lightbox").onclick = (e) => { if (e.target.id === "lightbox") $("#lightbox").hidden = true; };
+  $("#lightbox").onclick = (e) => { if (e.target.id === "lightbox") closeLightbox(); };
   document.addEventListener("keydown", (e) => {
     if ($("#lightbox").hidden) return;
-    if (e.key === "Escape") $("#lightbox").hidden = true;
+    if (e.key === "Escape") closeLightbox();
     if (e.key === "ArrowLeft") $(".lb-prev").click();
     if (e.key === "ArrowRight") $(".lb-next").click();
   });

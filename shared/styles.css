@@ -429,3 +429,94 @@ html.locked body > *:not(.gate) { visibility: hidden; }
 .act.fixed .grip { cursor: default; font-size: .85rem; letter-spacing: 0; }
 .act.fixed .aname { color: var(--muted); }
 .fixed-tag { font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 800; padding: 4px 6px; }
+
+/* ---------- today (phone view) ---------- */
+.tabs .tab-today { background: var(--rose-soft); color: #8d3d3d; }
+.tabs .tab-today.active { background: var(--rose); color: #fff; }
+.today { padding-top: 18px; padding-bottom: 60px; max-width: 760px; }
+.today-head { display: grid; grid-template-columns: 34px 1fr 34px; gap: 10px; align-items: center; }
+.today-head .mini { height: 34px; font-size: 1.1rem; border-radius: 50%; }
+.today-title { text-align: center; }
+.today-title small { color: var(--rose); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; }
+.today-title h2 { font-size: 1.8rem; color: var(--sea-deep); line-height: 1.1; }
+.today-title .mood { margin: 4px 0 0; font-size: 1rem; }
+.today-tools { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; margin: 14px 0 18px; }
+.progress-pill { font-size: .78rem; background: var(--sand); border-radius: 999px; padding: 6px 12px; color: var(--muted); font-weight: 700; }
+.tonight { display: grid; grid-template-columns: 96px 1fr; gap: 14px; background: var(--rose-soft); border-radius: 16px; padding: 12px; margin-bottom: 18px; align-items: center; }
+.tonight img { width: 96px; height: 96px; object-fit: cover; border-radius: 12px; }
+.tonight b { font-family: var(--serif); font-size: 1.25rem; color: var(--sea-deep); display: block; }
+.tonight small { color: var(--muted); display: block; font-size: .8rem; }
+.tonight .wl { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: #8d3d3d; font-weight: 800; }
+.tonight.empty { grid-template-columns: 1fr; background: var(--sand); }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.step { display: grid; grid-template-columns: 44px 1fr; gap: 10px; background: var(--paper); border-radius: 16px; padding: 14px 14px 12px; box-shadow: var(--shadow); }
+.step.fixed { background: var(--sand); box-shadow: none; }
+.step.done { opacity: .55; }
+.step.done .stephead b { text-decoration: line-through; }
+.stepcheck { position: relative; display: grid; place-items: center; cursor: pointer; }
+.stepcheck input { position: absolute; opacity: 0; width: 44px; height: 44px; margin: 0; cursor: pointer; }
+.stepcheck .num { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--serif); font-size: 1.2rem; color: var(--sea-deep); border: 2px solid rgba(31,95,122,.3); background: #fff; transition: all .2s; }
+.step.done .stepcheck .num { background: var(--rose); border-color: var(--rose); color: #fff; }
+.step.done .stepcheck .num::before { content: "✓"; font-family: var(--sans); font-size: 1rem; }
+.step.done .stepcheck .num { font-size: 0; }
+.stephead b { font-size: 1.02rem; color: var(--sea-deep); }
+.stepbtns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.slot { border: 1.5px dashed rgba(43,42,51,.15); border-radius: 12px; padding: 6px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; min-height: 64px; background: #fff; }
+.slot.has { border-style: solid; border-color: rgba(201,107,107,.35); background: #fff8f6; }
+.take { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; font-size: 1.3rem; color: var(--muted); padding: 4px 6px; }
+.take span { font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; }
+.mthumb { position: relative; width: 52px; height: 52px; border: none; padding: 0; border-radius: 10px; overflow: hidden; background: var(--sand); }
+.mthumb img { width: 100%; height: 100%; object-fit: cover; }
+.play { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 1.2rem; text-shadow: 0 1px 6px rgba(0,0,0,.6); font-style: normal; pointer-events: none; }
+.today-food { margin-top: 18px; background: var(--paper); border-radius: 16px; padding: 14px; box-shadow: var(--shadow); }
+.today-food .wl { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 800; display: block; margin-bottom: 8px; }
+.tf { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(43,42,51,.06); }
+.tf b { font-family: var(--serif); font-size: 1.1rem; color: var(--sea-deep); }
+.tf small { grid-column: 1; color: var(--muted); font-size: .8rem; }
+.tf .btn { grid-row: 1 / span 2; }
+.memo-tip { font-size: .8rem; color: var(--muted); text-align: center; margin-top: 22px; }
+
+/* ---------- memories ---------- */
+.memday h2 { font-size: 1.8rem; color: var(--sea-deep); margin: 30px 0 10px; }
+.memday h2 span { font-family: var(--sans); font-size: .9rem; color: var(--muted); font-weight: 400; }
+.memgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.mem { margin: 0; background: var(--paper); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
+.memopen { position: relative; display: block; width: 100%; aspect-ratio: 1; border: none; padding: 0; background: var(--sand); cursor: zoom-in; }
+.memopen img { width: 100%; height: 100%; object-fit: cover; }
+.memopen .noimg { display: grid; place-items: center; height: 100%; font-size: 2rem; }
+.mem figcaption { padding: 8px 10px 10px; font-size: .8rem; position: relative; }
+.mem figcaption b { display: block; font-family: var(--serif); font-size: 1rem; color: var(--sea-deep); }
+.mem figcaption small { color: var(--muted); }
+.mem .rm { position: absolute; top: 6px; right: 6px; opacity: 0; }
+.mem:hover .rm { opacity: .8; }
+.mempin { width: 46px; height: 46px; border-radius: 50% 50% 50% 4px; overflow: hidden; border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,.3); background: var(--sand); display: grid; place-items: center; }
+.mempin img { width: 100%; height: 100%; object-fit: cover; }
+.mempin.selfie { border-color: var(--rose); }
+.mempin.video { border-color: var(--gold); }
+#lb-video { max-width: 92vw; max-height: 86vh; border-radius: 12px; }
+@media (max-width: 680px) { .slots { grid-template-columns: repeat(3, 1fr); } .tonight { grid-template-columns: 72px 1fr; } .tonight img { width: 72px; height: 72px; } .memgrid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- install hint ---------- */
+.install-hint { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 4000; background: var(--sea-deep); color: #fff; border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; font-size: .85rem; box-shadow: var(--shadow-lg); }
+.install-hint button { background: transparent; border: none; color: #fff; font-size: 1.3rem; line-height: 1; }
+
+/* phone fixes */
+.slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.slot { min-width: 0; }
+.take span { font-size: .58rem; text-align: center; line-height: 1.2; }
+.step, .tonight, .today-food { min-width: 0; }
+.stephead, .adesc { overflow-wrap: anywhere; }
+@media (max-width: 680px) {
+  .tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .topbar { justify-content: flex-start; }
+  .brand-dates { display: none; }
+}
+.step { grid-template-columns: 44px minmax(0, 1fr); }
+.today-head { grid-template-columns: 34px minmax(0, 1fr) 34px; }
+.tonight { grid-template-columns: 96px minmax(0, 1fr); }
+.tf { grid-template-columns: minmax(0, 1fr) auto; }
+.act { grid-template-columns: 18px 26px minmax(0, 1fr) auto; }
+.day { grid-template-columns: 300px minmax(0, 1fr); }
+@media (max-width: 680px) { .tonight { grid-template-columns: 72px minmax(0, 1fr); } .day { grid-template-columns: 1fr; } .act { grid-template-columns: 18px minmax(0, 1fr); } }
