@@ -520,3 +520,22 @@ html.locked body > *:not(.gate) { visibility: hidden; }
 .act { grid-template-columns: 18px 26px minmax(0, 1fr) auto; }
 .day { grid-template-columns: 300px minmax(0, 1fr); }
 @media (max-width: 680px) { .tonight { grid-template-columns: 72px minmax(0, 1fr); } .day { grid-template-columns: 1fr; } .act { grid-template-columns: 18px minmax(0, 1fr); } }
+
+/* memory strip (selfie → view → video) */
+.memstrip { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.mthumbs { display: flex; gap: 6px; flex-wrap: wrap; }
+.mthumb em { position: absolute; bottom: 2px; right: 3px; font-size: .7rem; font-style: normal; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+.mthumb.selfie { outline: 2px solid var(--rose); }
+.mthumb.video { outline: 2px solid var(--gold); }
+.capture { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: var(--rose); color: #fff; border-radius: 999px; padding: 10px 16px; font-weight: 800; font-size: .9rem; box-shadow: 0 6px 16px rgba(201,107,107,.3); transition: transform .15s; }
+.capture:active { transform: scale(.97); }
+.capture.scenery { background: var(--sea); box-shadow: 0 6px 16px rgba(31,95,122,.3); }
+.capture.video { background: var(--gold); box-shadow: 0 6px 16px rgba(201,162,79,.3); }
+.capture small { font-weight: 600; opacity: .85; font-size: .7rem; }
+.memdone { font-family: var(--serif); font-style: italic; color: var(--rose); }
+.more { font-size: .78rem; color: var(--muted); }
+.more summary { cursor: pointer; list-style: none; text-decoration: underline dotted; }
+.more summary::-webkit-details-marker { display: none; }
+.more[open] { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.more .take { flex-direction: row; font-size: 1rem; gap: 4px; padding: 4px 8px; border: 1px solid rgba(43,42,51,.12); border-radius: 999px; }
+.more .take span { text-transform: none; letter-spacing: 0; font-size: .72rem; }
